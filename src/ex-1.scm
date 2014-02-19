@@ -5,6 +5,8 @@
 ; function maybe useful
 (define (square x) (* x x))
 (define (cube x) (* x x x))
+(define (double x) (+ x x))
+(define (halve x) (/ x 2))
 
 ; ex-1.3 sum of larger two
 (define sum-of-larger-two
@@ -72,4 +74,38 @@
         (cons (pascal-line row 1) (pascal-display (+ row 1)))))
   
   (pascal-display 1))
-    
+
+; ex-1.16
+(define (fast-expt b n)
+  (define (iter b n a)
+    (cond ((= n 0) a)
+          ((even? n) (iter (square b) (/ n 2) a))
+          (else (iter b (- n 1) (* b a)))))
+  (iter b n 1))
+
+; ex-1.7
+(define (multiply a b)  
+  (cond ((= b 0) 0)
+        ((even? b) (double (multiply a (halve b))))
+        (else (+ a (multiply a (- b 1))))))
+
+; ex-1.8
+(define (fast-multiply a b)
+  (define (iter a b count)
+    (cond ((= b 0) count)
+          ((even? b) (iter (double a) (halve b) count))
+          (else (iter a (- b 1) (+ a count)))))
+  (iter a b 0))
+
+; [Book] prime test
+(define (prime? n)
+  (define (smallest-divisor n) (find-divisor n 2))
+
+  (define (find-divisor n test-divisor)
+    (cond ((> (square test-divisor) n) n)
+          ((divides? test-divisor n) test-divisor)
+          (else (find-divisor n (+ test-divisor 1)))))
+
+  (define (divides? a b) (= (remainder b a) 0))
+
+  (= n (smallest-divisor n)))

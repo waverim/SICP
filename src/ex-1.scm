@@ -7,6 +7,7 @@
 (define (cube x) (* x x x))
 (define (double x) (+ x x))
 (define (halve x) (/ x 2))
+(define (inc x) (+ x 1))
 
 ; ex-1.3 sum of larger two
 (define sum-of-larger-two
@@ -109,3 +110,83 @@
   (define (divides? a b) (= (remainder b a) 0))
 
   (= n (smallest-divisor n)))
+
+; from ex-1.29 to ex-1.33 are about high-order function 
+; ex-1.29 Simpson's rule
+(define (simpson f a b n)
+  (define h (/ ( - b a) n))
+  (define (yk k) (f (+ a (* k h))))
+  
+  ; sum
+  (define (sum term a next b)
+    (if (> a b)
+        0
+        (+ (term a)
+           (sum term (next a) next b))))
+  
+  (define (simpson-helper k)
+    (* (cond ((or (= k 1) (= k n)) 1)
+          ((odd? k) 4)
+          (else 2))
+       (yk k)))
+    (* (/ h 3) (sum simpson-helper 0 inc n)))
+
+; ex-1.30 sum by iteration
+(define (sum-iter term a next b)
+  (define (iter a result)
+    (if (> a b)
+        result
+        (iter (next a) (+ result (term a)))))
+  (iter a 0))
+
+; ex-1.31 product & factional & calculate pi & iteration type of product
+(define (product term a next b)
+  (if (> a b)
+      1
+      (* (term a)
+         (product term (next a) next b))))
+
+(define (factional n)
+  (product 
+   (lambda (n) n) 1 inc n))
+
+(define (pi-term n)
+  (if (even? n)
+      (/ (+ n 2) (+ n 1))
+      (/ (+ n 1) (+ n 2))))
+
+(define (product-iter term a next b)
+  (define (iter a result)
+    (if (> a b)
+        result
+        (iter (next a) (* result (term a)))))
+  (iter a 1))
+
+; ex-1.32
+(define (accumulate combiner null-value term a next b)
+  (if (> a b)
+      null-value
+      (combiner (term a) (accumulator combiner null-value term (next a) next b))))
+
+(define (sum-accumulate term a next b)
+  (accumulate + 0 term a next b))
+
+(define (product-accumulate term a next b)
+  (accumulate * 1 term a next b))
+
+(define (accumulate-iter combiner null-value term a next b)
+  (define (iter a result)
+    (if (> a b)
+        result
+        (iter (next a) (combiner result (term a)))))
+  (iter a null-value))
+
+; ex-1.33 only write filter function 
+(define (filtered-accumulate combiner null-value term a next b)
+  (if (> a b)
+      null-value
+      (if (filter a)
+          (combiner (term a) 
+                    (filtered-accumulate combiner null-value term (next a) next b))
+          (combiner null-value 
+                    (filtered-accumulate combiner null-value term (next a) next b)))))

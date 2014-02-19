@@ -190,3 +190,43 @@
                     (filtered-accumulate combiner null-value term (next a) next b))
           (combiner null-value 
                     (filtered-accumulate combiner null-value term (next a) next b)))))
+
+; ex-1.37 infinite continued fraction
+; recursive version
+(define (cont-frac-rec n d k)
+  (define (rec-helper i)
+    (/ (n i)
+       (+ (d i)
+          (if (= i k)
+              0
+              (rec-helper (+ i 1))))))
+  (rec-helper 1))
+
+; iteraction version
+(define (cont-frac-iter n d k)
+  (define (iter-helper i result)
+    (if (= i 0)
+        result
+        (iter-helper (- i 1)
+                     (/ (n i) (+ (d i) result)))))
+  (iter-helper k 0.0))
+
+; ex-1.38 Find e
+(define (find-e k)
+  (let ((n (lambda (i) 1))
+        (d (lambda (i)
+             (cond ((= (remainder i 3) 1)
+                    (* 1.5 (+ i 1)))
+                   (else 1)))))
+    (+ 2.0 (cont-frac-rec n d k))))
+
+; ex-1.39 tangent
+; recursive
+(define (tan-cf x k)
+  (cont-frac-rec (lambda (i)
+                   (if (= i 1) 
+                       x 
+                       (- (* x x))))
+                 (lambda (i)
+                   (- (* i 2) 1))
+                 k))

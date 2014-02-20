@@ -230,3 +230,22 @@
                  (lambda (i)
                    (- (* i 2) 1))
                  k))
+
+; ex-1.40 cubic
+(define (cubic a b c)
+  (lambda (x)
+    (+ (cube x)
+       (* a (square x))
+       (* b x)
+       c)))
+
+; ex-1.46 iterative improvement
+(define (close-enough? a b)
+  (< (/ abs (- a b) b) 0.000001))
+
+(define (iterative-improve close-enough? improve)
+  (lambda (x)
+    (let ((y (improve x)))
+      (if (close-enough? x y)
+          y
+          ((iterative-improve close-enough? improve) y)))))

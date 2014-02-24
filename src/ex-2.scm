@@ -133,3 +133,30 @@
         (low (lower-bound x)))
     (/ (- up low)
        (+ up low))))
+
+; ex-2.17 last element of a given (nonempty) list
+(define (last-pair l)
+  (if (null? (cdr l))
+      (car l)
+      (last-pair (cdr l))))
+
+; ex-2.18 reverse a list using iteration
+(define (reverse-list l)
+  (define (iter l result)
+    (if (null? l)
+        result
+        (iter (cdr l)
+              (cons (car l) result))))
+  (iter l '()))
+
+; ex-2.20 find same parity in a list using iteration
+(define (same-parity x . y)
+  (define (iter parity l result)
+    (if (null? l) 
+        result
+        (if (parity (car l))
+            (cons (car l) (iter parity (cdr l) result))
+            (iter parity (cdr l) result))))
+  (cons x (if (odd? x)
+              (iter odd? y '())
+              (iter even? y '()))))

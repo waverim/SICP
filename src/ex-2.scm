@@ -160,3 +160,15 @@
   (cons x (if (odd? x)
               (iter odd? y '())
               (iter even? y '()))))
+
+; ex-2.22 square of a list
+; first: define map function using iteration
+(define (map-iter f l)
+  (define (iter list result)
+    (if (null? list)
+        result
+        (cons (f (car list))
+              (iter (cdr list) result))))
+  (iter l '()))
+; to use square, do the following:
+; (map-iter (lambda (x) (square x)) '(1 2 3 4 5)) 

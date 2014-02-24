@@ -122,3 +122,14 @@
         (p4 (* (lower-bound x) (upper-bound y))))
     (make-interval (min p1 p2 p3 p4)
                    (max p1 p2 p3 p4))))
+
+; ex-2.12 make-center-percent
+(define (make-center-percent c p)
+  (make-interval (- c (abs (* c p)))
+                 (+ c (abs (* c p)))))
+
+(define (percent x)
+  (let ((up (upper-bound x))
+        (low (lower-bound x)))
+    (/ (- up low)
+       (+ up low))))

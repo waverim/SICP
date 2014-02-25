@@ -172,3 +172,38 @@
   (iter l '()))
 ; to use square, do the following:
 ; (map-iter (lambda (x) (square x)) '(1 2 3 4 5)) 
+
+; ex-2.27 deep reverse using iteration
+(define (deep-reverse l)
+  (define (iter list result)
+    (if (null? list)
+        result
+        (if (not (pair? (car list)))
+            (iter (cdr list) (cons (car list) result))
+            (iter (cdr list) (cons (deep-reverse (car list)) result)))))
+  (iter l (quote ())))
+
+; ex-2.28 find leaves of a tree using iteration
+(define (fringe t)
+  (define (iter tree result)
+    (if (null? tree)
+        result
+        (if (not (pair? tree))
+            (cons tree result)
+            (iter (car tree) 
+                  (iter (cdr tree) result)))))
+  (iter t (quote ())))
+
+; ex-2.30
+(define (square-tree tree)
+  (cond ((null? tree) '())
+        ((not (pair? tree)) (square tree))
+        (else (cons (square-tree (car tree))
+                    (square-tree (cdr tree))))))
+
+(define (square-tree-map tree)
+  (map (lambda (x)
+         (if (not (pair? x))
+             (square x)
+             (square-tree-map x)))
+       tree))

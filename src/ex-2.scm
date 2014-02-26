@@ -194,9 +194,9 @@
                   (iter (cdr tree) result)))))
   (iter t (quote ())))
 
-; ex-2.30
+; ex-2.30 square a tree 
 (define (square-tree tree)
-  (cond ((null? tree) '())
+  (cond ((null? tree) (quote ()))
         ((not (pair? tree)) (square tree))
         (else (cons (square-tree (car tree))
                     (square-tree (cdr tree))))))
@@ -207,3 +207,26 @@
              (square x)
              (square-tree-map x)))
        tree))
+
+; ex-2.31 improve tree using map
+(define (tree-map f tree)
+  (map (lambda (x)
+         (cond ((null? x) (quote ()))
+               ((not (pair? x)) (f x))
+               (else (tree-map f x))))
+       tree))
+
+; ex-2.32 set of all subsets of the set
+; from http://community.schemewiki.org by jz
+; The set of all subsets of a given set is the union of:
+; - the set of all subsets excluding the first number.
+; - the set of all subsets excluding the first number, 
+;   with the first number re-inserted into each subset.
+(define (subsets s)
+  (if (null? s)
+      (list (quote ()))
+      (let ((rest (subsets (cdr s))))
+        (append rest 
+                (map (lambda (x)
+                       (cons (car s) x))
+                     rest)))))

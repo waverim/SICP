@@ -230,3 +230,53 @@
                 (map (lambda (x)
                        (cons (car s) x))
                      rest)))))
+
+; ex-2.33 using accumulate
+(define (accumulate op initial sequence)
+  (if (null? sequence)
+      initial
+      (op (car sequence)
+          (accumulate op initial (cdr sequence)))))
+
+(define (map-acc p sequence)
+  (accumulate (lambda (x y)
+                (cons (p x) y))
+              (quote ())
+              sequence))
+
+(define (append-acc seq1 seq2)
+  (accumulate cons
+              seq2
+              seq1))
+
+(define (length-acc sequence)
+  (accumulate (lambda (x y)
+                (+ 1 y))
+              0 
+              sequence))
+                
+; ex-2.34 Evaluating a polynomial 
+; using Horner’s rule & accumulate
+(define (horner-eval x coefficient-sequence)
+  (accumulate (lambda (this-coeff higher-terms)
+                (+ (* higher-terms x) this-coeff))
+              0
+              coefficient-sequence))
+
+; ex-2.35 count-leaves using accumulate 
+(define (count-leaves-acc t)
+  (accumulate +
+              0
+              (map (lambda (x)
+                     (if (not (pair? x))
+                         1
+                         (count-leaves-acc x)))
+                   t)))
+
+; ex-2.36 accumulate-n
+; from http://community.schemewiki.org by jz
+(define (accumulate-n op init seqs)
+  (if (null? (car seqs))
+      (quote ())
+      (cons (accumulate op init (map car seqs))
+            (accumulate-n op init (map cdr seqs)))))

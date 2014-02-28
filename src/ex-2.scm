@@ -280,3 +280,52 @@
       (quote ())
       (cons (accumulate op init (map car seqs))
             (accumulate-n op init (map cdr seqs)))))
+
+; ex-2.37 martix using accumulate
+(define (dot-product v w)
+  (accumulate +
+              0
+              (map * v w)))
+
+(define (matrix-*-vector m v)
+  (map (lambda (m-row)
+         (dot-product m-row v))
+       m))
+
+; Define the matrix transpose, 
+; makes the matrix multiplication easier
+(define (transpose mat)
+  (accumulate-n cons (quote ()) mat))
+
+(define (matrix-*-matrix m n)
+  (let ((n-cols (transpose n)))
+    (map (lambda (m-row)
+           (matrix-*-vector n-cols m-row))
+         m)))
+
+; ex-2.38 functin defined in the book
+(define (fold-right op initial sequence)
+  (accumulate op initial sequence))
+
+(define (fold-left op initial sequence)
+  (define (iter result rest)
+    (if (null? rest)
+        result
+        (iter (op result (car rest))
+              (cdr rest))))
+  (iter initial sequence))
+
+; op must be commutative
+
+; ex-2.39 reverse using fold-right & fold-left
+(define (reverse-right sequence)
+  (fold-right (lambda (x y)
+                (append y (list x)))
+              (quote ())
+              sequence))
+
+(define (reverse-left sequence)
+  (fold-left (lambda (x y)
+               (cons y x))
+             (quote ())
+             sequence))

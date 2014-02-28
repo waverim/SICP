@@ -303,7 +303,7 @@
            (matrix-*-vector n-cols m-row))
          m)))
 
-; ex-2.38 functin defined in the book
+; ex-2.38 function defined in the book
 (define (fold-right op initial sequence)
   (accumulate op initial sequence))
 
@@ -329,3 +329,87 @@
                (cons y x))
              (quote ())
              sequence))
+
+; ex-2.40 using unique-pairs to redefine prime-pair-sum
+
+; "is a prime" function from charpet 1 in the book
+(define (prime? n)
+  (define (smallest-divisor n) (find-divisor n 2))
+
+  (define (find-divisor n test-divisor)
+    (cond ((> (square test-divisor) n) n)
+          ((divides? test-divisor n) test-divisor)
+          (else (find-divisor n (+ test-divisor 1)))))
+
+  (define (divides? a b) (= (remainder b a) 0))
+
+  (= n (smallest-divisor n)))
+
+; functions in the book
+(define (make-pair-sum pair)
+  (list (car pair) (cadr pair) (+ (car pair) (cadr pair))))
+
+(define (prime-sum? pair)
+  (prime? (+ (car pair) (cadr pair)))) 
+
+(define (flatmap proc seq)
+  (accumulate append (quote ()) (map proc seq)))
+
+; functions should be defined
+(define (enumerate-interval low high)
+  (if (> low high)
+      (quote ())
+      (cons low (enumerate-interval (inc low) high))))
+
+(define (filter f s)
+  (cond ((null? s) (quote ()))
+        ((f (car s))
+         (cons (car s)
+               (filter f (cdr s))))
+        (else (filter f (cdr s)))))
+
+; unique-pairs
+(define (unique-pairs n)
+  (flatmap (lambda (i)
+             (map (lambda (j) (list i j))
+                  (enumerate-interval 1 (- i 1))))
+           (enumerate-interval 1 n)))
+
+; prime-sum-pairs using unique-pairs
+(define (prime-sum-pairs n)
+  (map make-pair-sum
+       (filter prime-sum? (unique-pairs n))))
+
+; ex-2.41 define prime-sum-triples 
+; using unique-triples & functions in the ex-2.40
+
+; sum a list
+(define (list-sum l)
+  (if (null? l)
+      0
+      (+ (car l) (list-sum (cdr l)))))
+
+; Determine whether the sum is a prime
+(define (prime-list-sum? list)
+  (prime? (list-sum list)))
+
+; make a list with sum, rebuild the list 
+; it may be a little repetitive
+(define (make-list-sum lat)
+  (define (iter l result)
+    (if (null? l)
+        result
+        (cons (car l) (iter (cdr l) result))))
+  (iter lat (list (list-sum lat))))
+
+(define (unique-triples n)
+  (flatmap (lambda (i)
+             (flatmap (lambda (j) 
+                        (map (lambda (k) (list i j k))
+                             (enumerate-interval 1 (- j 1))))
+                      (enumerate-interval 1 (- i 1))))
+           (enumerate-interval 1 n)))
+
+(define (prime-sum-triples n)
+  (map make-list-sum
+       (filter prime-list-sum? (unique-triples n))))

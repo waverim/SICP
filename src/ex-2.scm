@@ -461,3 +461,12 @@
 ; 7    o
 ; 8          o
 ;   1  2  3  4  5  6  7  8
+
+; ex-2.54 equal? using recursion
+(define (equal-rec? l1 l2)
+  (cond ((and (not (pair? l1)) (not (pair? l2)))
+         (eq? l1 l2))
+        ((and (pair? l1) (pair? l2))
+         (and (equal-rec? (car l1) (car l2))
+              (equal-rec? (cdr l1) (cdr l2))))
+        (else #f)))

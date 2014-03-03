@@ -540,3 +540,90 @@
 
 (define (mutiplicand p)
   (accumulate make-product 1 (cddr p)))
+
+; ex-2.59 union-set
+(define (element-of-set? x set)
+  (cond ((null? set) #f)
+        ((equal? x (car set)) #t)
+        (else (element-of-set? x (cdr set)))))
+
+; conventional methods
+(define (union-set s1 s2)
+  (cond ((null? s1) s2)
+        ((null? s2) s1)
+        ((element-of-set? (car s1) s2)
+         (union-set (cdr s1) s2))
+        (else (cons (car s1)
+                    (union-set (cdr s1) s2)))))
+
+; using filter
+(define (union-set-filter s1 s2)
+  (append s1
+          (filter (lambda (x)
+                    (not (element-of-set? x s1)))
+                  s2)))
+
+; ex-2.61 adjoin-set in sorted list
+(define (adjoin-set-sorted x set)
+  (cond ((null? set) (list x))
+        ((= x (car set)) set)
+        ((< x (car set)) (cons x set))
+        (else (cons (car set) (adjoin-set-sorted x (cdr set))))))
+
+; ex-2.62 union-set in sorted list
+(define (union-set-sorted s1 s2)
+  (cond ((null? s1) s2)
+        ((null? s2) s1)
+        (else (let ((x1 (car s1))
+                    (x2 (car s2)))                        
+                (cond ((= x1 x2)
+                       (cons x1 (union-set-sorted (cdr s1) (cdr s2))))
+                      ((< x1 x2)
+                       (cons x1 (union-set-sorted (cdr s1) s2)))
+                      (else 
+                       (cons x2 (union-set-sorted s1 (cdr s2)))))))))
+
+; [Book] tree
+; basic function of operating a tree
+(define (entry tree) (car tree))
+(define (left-branch tree) (cadr tree))
+(define (right-branch tree) (caddr tree))
+(define (make-tree entry left right) (list entry left right))
+
+(define (element-of-tree? x tree)
+  (cond ((null? tree) #f)
+        ((= x (entry tree)) true)
+        ((< x (entry tree)) 
+         (element-of-tree? x (left-branch tree)))
+        (else 
+         (element-of-tree? x (right-branch tree)))))
+
+(define (adjoin-tree x tree)
+  (cond ((null? tree) (make-tree x (quote ()) (quote ())))
+        ((= x (entry tree)) tree)
+        ((< x (entry tree))
+         (make-tree (entry tree)
+                    (adjoin-tree x (left-branch tree))
+                    (right-branch tree)))
+        (else
+         (make-tree (entry tree)
+                    (left-branch tree)
+                    (adjoin-tree x (right-branch tree))))))
+
+; tree->list
+(define (tree->list-1 tree)
+  (if (null? tree) 
+      (quote ())
+      (append (tree->list-1 (left-branch tree))
+              (cons (entry tree)
+                    (tree->list-1 (right-branch tree))))))
+
+(define (tree->list-2 tree)
+  (defien (copy-to-list tree result-list)
+    (if (null? tree)
+        (quote ())
+        (copy-to-list (left-branch tree)
+                      (cons (entry tree)
+                            (copy-to-list (right-branch tree)
+                                          result-list)))))
+  (copy-to-list tree (quote ())))

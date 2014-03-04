@@ -627,3 +627,141 @@
                             (copy-to-list (right-branch tree)
                                           result-list)))))
   (copy-to-list tree (quote ())))
+
+; Huffman
+; code in the book
+(define (make-leaf symbol weight)
+  (list 'leaf symbol weight))
+
+(define (leaf? object)
+  (eq? (car object) 'leaf))
+
+(define (symbol-leaf x) (cadr x))
+(define (weight-leaf x) (caddr x))
+
+(define (make-code-tree left right)
+  (list left right
+        (append (symbols left) (symbols right))
+        (+ (weight left) (weight right))))
+
+(define (left-branch tree) (car tree))
+(define (right-branch tree) (cadr tree))
+
+(define (symbols tree)
+  (if (leaf? tree)
+      (list (symbol-leaf tree))
+      (caddr tree)))
+
+(define (weight tree)
+  (if (leaf? tree)
+      (weight-leaf tree)
+      (cadddr tree)))
+
+; decode
+(define (decode bits tree)
+  (define (decode-1 bits current-branch)
+    (if (null? bits)
+        (quote ())
+        (let ((next-branch 
+               (choose-branch (car bits) current-branch)))
+          (if (leaf? next-branch)
+              (cons (symbol-leaf next-branch)
+                    (decode-1 (cdr bits) tree))
+              (decode-1 (cdr bits) next-branch)))))
+  (decode-1 bits tree))
+
+(define (choose-branch bit branch)
+  (cond ((= bit 0) (left-branch branch))
+        ((= bit 1) (right-branch branch))
+        (else (error "bad bit -- CHOOSE-BRANCH" bit))))
+
+; sets of weighted elements
+(define (adjoin-set x set)
+  (cond ((null? set) (list x))
+        ((< (weight x) (weight (car set) (cons x set))))
+        (else (cons (car set)
+                    (adjoin-set x (cdr set))))))
+
+(define (make-leaf-set pairs)
+  (if (null? pairs)
+      (quote ())
+      (let ((pair (car pairs)))
+        (adjoin-set (make-leaf (car pair)
+                               (cadr pair))
+                    (make-leaf-set (cdr pairs))))))
+
+; ex-2.67 sample code in the book
+(define sample-tree
+  (make-code-tree (make-leaf 'A 4)
+                  (make-code-tree
+                   (make-leaf 'B 2)
+                   (make-code-tree (make-leaf 'D 1)
+                                   (make-leaf 'C 1)))))
+(define sample-message '(0 1 1 0 0 1 0 1 0 1  1 1 0))
+
+; answer: (a d a b b c a)
+
+; ex-2.68 encode
+(define (encode message tree)
+  (if (null? message)
+      (quote ())
+      (append (encode-symbol (car message) tree)
+              (encode (cdr message) tree))))
+
+; encode-symbol function
+; from http://community.schemewiki.org/ by siki
+(define (encode-symbol symbol tree)
+  (cond ((not (element-of-set? symbol (symbols tree))) #f)
+        ((leaf? tree) (quote ()))
+        (else (let ((left-set (symbols (left-branch tree)))
+                    (right-set (symbols (right-branch tree))))
+                (cond ((element-of-set? symbol left-set)
+                       (cons 0 (encode-symbol symbol (left-branch tree))))
+                      ((element-of-set? symbol right-set)
+                       (cons 1 (encode-symbol symbol (right-branch tree)))))))))
+
+; ex-2.69 generate huffman tree
+(define (generate-huffman-tree pairs)
+  (successive-merge (make-leaf-set pairs)))
+
+(define (successive-merge leaf-set)
+  (if (null? (cdr leaf-set))
+      (car leaf-set)
+      (successive-merge
+       (adjoin-set 
+        (make-code-tree (car leaf-set)
+                        (cadr leaf-set))
+        (caddr leaf-set)))))
+
+; ex-2.75 message passing
+(define (make-from-mag-ang)
+  (define (dispatch op)
+    (cond ((eq? op 'real-part) (* r (cos a)))
+          ((eq? op 'imag-part) (* r (sin a)))
+          ((eq? op 'magnitude) r)
+          ((eq? op 'angle) a)
+          (else #f)))
+  dispatch)
+
+; put & get
+; it's not given in the book, but may be useful
+; http://stackoverflow.com/a/5499256/3289554
+(define global-array '())
+(define (make-entry k v) (list k v))
+(define (key entry) (car entry))
+(define (value entry) (cadr entry))
+
+(define (put op type item)
+  (define (put-helper k array)
+    (cond ((null? array) (list (make-entry k item)))
+          ((equal? (key (car array)) k) array)
+          (else (cons (car array)
+                      (put-helper k (cdr array))))))
+  (set! global-array (put-helper (list op type) global-array)))
+
+(define (get op type)
+  (define (get-helper k array)
+    (cond ((null? array) #f)
+          ((equal? (key (car array)) k) (value (car array)))
+          (else (get-helper k (cdr array)))))
+  (get-helper (list op type) global-array))

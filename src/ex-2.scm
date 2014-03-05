@@ -765,3 +765,71 @@
           ((equal? (key (car array)) k) (value (car array)))
           (else (get-helper k (cdr array)))))
   (get-helper (list op type) global-array))
+
+; ex-2.78 redefine function using number?
+(define (attach-tag type-tag contents)
+  (if (number? contents)
+      contents
+      (cons type-tag contents)))
+
+(define (type-tag datum)
+  (cond ((number? datum) 'scheme-number)
+        ((pair? datum) (car datum))
+        (else #f)))
+
+(define (contents datum)
+  (cond ((number? datum) datum)
+        ((pair? datum) (cdr datum))
+        (else #f)))
+
+; ex-2.79 equ?
+(define (equ? x y) (apply-generic 'equ? x y))
+
+(define (install-scheme-number-package)
+  (put 'equ? '(scheme-number scheme-number) =)
+  'done)
+
+(define (install-rational-package)
+  (define (equ? x y)
+    (= (* (number x) (denom y))
+       (* (number y) (denom y))))
+  (put 'equ? '(rational rational) equ?)
+  'done)
+
+(define (install-complex-package)
+  (define (equ? x y)
+    (and (= (real-part x) (real-part y))
+         (= (imag-part x) (imag-part y))))
+  (put 'equ? '(complex complex) equ?)
+  'done)
+
+; ex-2.80
+(define (=zero? x) (apply-generic '=zero? x))
+
+(define (install-zero-package)
+  (put '=zero? 'scheme-number (lambda (x) (= x 0)))
+  (put '=zero? 'rational-number (lambda (x) (= (number x) 0)))
+  (put '=zero? 'complex-number 
+       (lambda (x) (= (real-part x) (imag-part x) 0))))
+
+; ex-2.81 redefine apply-generic
+(define (apply-generic op . args)
+  (let ((type-tags (map type-tag args)))
+    (let ((proc (get op type-tags)))
+      (if proc
+          (apply proc (map contents args))
+          (if (= (length args) 2)
+              (let ((type1 (car type-tags))
+                    (type2 (cadr type-args))
+                    ((a1 (car args)))
+                    ((a2 (cadr args))))
+                (if (equal? type1 type2)
+                    (list op type-tags)
+                    (let ((t1->t2 (get-coercion type1 type2))
+                          (t2->t1 (get-coercion type2 type1)))
+                      (cond (t1->t2
+                             (apply-generic op (t1->t2 a1) a2))
+                            (t2->t1
+                             (apply-generic op a1 (t2->t1 a2)))
+                            (else (list op type-tags))))))
+              (list op type-tags))))))

@@ -61,3 +61,39 @@
               ((eq? m 'deposit) deposit)
               (else (lambda (x) "Unkown request")))))
   dispatch)
+
+; ex-3.5 Monte Carlo integration
+; function in the book
+(define (monte-carlo trials experiment)
+  (define (iter trials-remaining trials-passed)
+    (cond ((= trials-remaining 0) 
+           (/ trials-passed trials))
+          ((experiment) 
+           (iter (- trials-remaining 1) (+ trials-passed 1)))
+          (else 
+           (iter (- trials-remaining 1) trials-passed))))
+  (iter trials 0))
+
+(define (random-in-range low high)
+  (let ((range (- high low)))
+    (+ low (* (random) range))))
+
+; random
+; reference from http://stackoverflow.com/a/14675103
+(define random
+  (let ((a 69069) (c 1) (m (expt 2 32)) (seed 19380110))
+    (lambda new-seed
+      (if (pair? new-seed)
+          (set! seed (car new-seed))
+          (set! seed (modulo (+ (* seed a) c) m)))
+      (/ seed m))))
+
+(define (P x y)
+  (< (+ (square (- x 5)) (square (- x 7)))
+     (square 3)))
+
+(define (estimate-integral P x1 x2 y1 y2 trials)
+  (monte-carlo trials 
+               (lambda () 
+                 (P (random-in-range x1 x2)
+                    (random-in-range y1 y2)))))

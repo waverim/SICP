@@ -109,3 +109,43 @@
     (lambda (x)
       (set! s (* s x))
       s)))
+
+; ex-3.17 redefine count-pairs
+(define (count-pairs x)
+  (define (iter x result)
+    (if (and (pair? x)
+             (not (memq x result)))
+        (iter (car x)
+              (iter (cdr x)
+                    (cons x result)))
+        result))
+  (length (iter x (quote ()))))
+
+; ex-3.18 detect loop
+(define (loop? list)
+  (let ((i (quote())))
+    (define (iter remain-list)
+      (cond ((null? remain-list) #f)
+            ((eq? i (car remain-list)) #t)
+            (else (set-car! remain-list i)
+                  (iter (cdr remain-list)))))
+    (iter list)))
+
+; ex-3.19 Floyd's cycle-finding algorithm
+; reference from http://community.schemewiki.org/
+(define (floyd-loop? list)
+  (define (safe? list)
+    (if (pair? list)
+        (cdr list)
+        (quote ())))
+  (define (iter a b)
+    (cond ((or (not (pair? a))
+               (not (pair? b)))
+           #f)
+          ((or (eq? a b)
+               (eq? a (safe? b)))
+           #t)
+          (else (iter (safe? a)
+                      (safe? (safe? b))))))
+  (iter (safe? list)
+        (safe? (safe? list))))

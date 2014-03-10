@@ -95,3 +95,17 @@
                (lambda () 
                  (P (random-in-range x1 x2)
                     (random-in-range y1 y2)))))
+
+; ex-3.7 make-joint, Just write a concept
+(define (make-joint account old-psw new-psw)
+  (lambda (password message)
+    (if (eq? old-psw new-psw)
+        (account old-psw message)
+        (lamda (x) "Incorrect password"))))
+
+; ex-3.8 Order of evaluation
+(define evaluate-order
+  (let ((s 1))
+    (lambda (x)
+      (set! s (* s x))
+      s)))
